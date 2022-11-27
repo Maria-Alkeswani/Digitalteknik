@@ -1,0 +1,37 @@
+-- FILE 1
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity mux is
+ port (x : in std_logic_vector(1 downto 0);
+		s: in std_logic;
+		y   : out std_logic);
+end mux;
+
+architecture rt1 of mux is
+begin
+   y <= (s and x(1)) or (not s and x(0));
+end architecture rt1;
+
+-- FILE 2
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity koppling is
+	port (x_in : in std_logic_vector(3 downto 0);
+		s_in   : in std_logic_vector(1 downto 0);
+		z      : out std_logic);
+end koppling;
+
+architecture beh of koppling is
+	signal yy: std_logic_vector(0 to 1);
+begin
+	m1: entity work.mux(rt1) port map (x(0) => x_in(0), x(1) => x_in(1), s => s_in(0), y => yy(0));
+	m2: entity work.mux(rt1) port map (x(0) => x_in(2), x(1) => x_in(3), s => s_in(0), y => yy(1));
+	m3: entity work.mux(rt1) port map (x(0) => yy(0), x(1) => yy(1), s => s_in(1), y => z);
+
+end architecture beh;

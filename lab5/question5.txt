@@ -1,0 +1,73 @@
+-- lab 4 uppgift5
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity uppgift5 is
+	port(clock: in std_logic;
+		stop: in std_logic;
+		fullblink: in std_logic;
+		reverse: in std_logic;
+		ut: std_logic_vector(3 downto 0));
+end entity uppgift5;
+
+architecture beh of uppgift5 is
+	type state_type is (s0, s1, s2, s3, s4, s5, s6, s7);
+	signal present_state, next_state: state_type;
+begin
+	process(present_state, stop, fullblink, reverse)
+	begin
+		if stop = '1' then
+			next_state <= present_state;
+		elsif fullblink = '1' then
+			if present_state = s0 then
+				next_state <= s4;
+			else
+				next_state <= s0;
+			end if;
+		elsif reverse = '0' then
+			case present_state is
+				when s0 => next_state <= s1;
+				when s1 => next_state <= s2;
+				when s2 => next_state <= s3;
+				when s3 => next_state <= s4;
+				when s4 => next_state <= s5;
+				when s5 => next_state <= s6;
+				when s6 => next_state <= s7;
+				when s7 => next_state <= s0;
+			end case;
+		else
+			case present_state is
+				when s0 => next_state <= s7;
+				when s1 => next_state <= s0;
+				when s2 => next_state <= s1;
+				when s3 => next_state <= s2;
+				when s4 => next_state <= s3;
+				when s5 => next_state <= s4;
+				when s6 => next_state <= s5;
+				when s7 => next_state <= s6;
+			end case;
+		end if;
+	end process;
+	
+	process(clock)
+	begin
+		if rising_edge(clock) then
+			present_state <= next_state;
+		end if;
+	end process;
+	
+	process(present_state)
+	begin
+		case present_state is
+			when s0 => ut <= "0000";
+			when s1 => ut <= "1000";
+			when s2 => ut <= "1100";
+			when s3 => ut <= "1110";
+			when s4 => ut <= "1111";
+			when s5 => ut <= "0111";
+			when s6 => ut <= "0011";
+			when s7 => ut <= "0001";
+		end case;
+	end process;
+end architecture beh;

@@ -1,0 +1,88 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity Bin_Dec_raknare is 
+	port( clk, bin_dec, UD, PE, CI : in std_logic;
+			Jam                    : in std_logic_vector(3 downto 0);
+			Q                      : out std_logic_vector(3 downto 0);
+			CO                     : out std_logic
+		);
+end Bin_Dec_raknare;
+
+architecture beh of Bin_Dec_raknare is
+	subtype state is integer range 0 to 15;
+	signal present_state, next_state : state;
+begin
+	process(CI, clk, PE, Jam)
+	begin
+		if PE = '0' then
+			if CI = '0' then
+				if rising_edge(clk) then
+					present_state <= next_state;
+				end if;
+			end if;
+		else
+			present_state <= to_integer(unsigned(Jam));
+		end if;
+	end process;
+	
+	process(present_state, bin_dec, UD)
+	begin
+		if bin_dec = '0' then
+			if UD = '1' then
+				if present_state < 9 then
+					next_state <= present_state + 1;
+				else
+					next_state <= 0;
+				end if;
+			else
+				if present_state > 0 then
+					next_state <= present_state - 1;
+				else
+					next_state <= 9;
+				end if;
+			end if;
+		else
+			if UD = '1' then
+				if present_state < 15 then
+					next_state <= present_state + 1;
+				else
+					next_state <= 0;
+				end if;
+			else
+				if present_state > 0 then
+					next_state <= present_state - 1;
+				else
+					next_state <= 15;
+				end if;
+			end if;
+		end if;
+	end process;
+	
+	process(present_state, bin_dec, UD)
+	begin
+		if UD = '1' then
+			if bin_dec = '1' then
+				if present_state = 15 then
+					CO <= '1';
+				else
+					CO <= '0';
+				end if;
+			else
+				if present_state = 9 then
+					CO <= '1';
+				else
+					CO <= '0';
+				end if;
+			end if;
+		else
+			if present_state = 0 then
+				CO <= '1';
+			else
+				CO <= '0';
+			end if;
+		end if;
+		Q <= std_logic_vector(to_unsigned(present_state, 4));
+	end process;
+end architecture beh;
